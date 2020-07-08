@@ -1,0 +1,29 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: access-logs
+  namespace: shortbrd-app
+spec:
+  schedule: "0 5 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: access-logs
+            image: jmreyesv/cronjob:1.0
+            command: ["./scripts/access-logs.sh"]
+            env:
+                - name: AWS_DEFAULT_REGION
+                  value: "us-west-2"
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                        name: app-secrets
+                        key: aws_access_key
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                        name: app-secrets
+                        key: aws_secret_key
+          restartPolicy: OnFailure

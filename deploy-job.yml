@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: deploy-tasks
+  namespace: shortbrd-app
+spec:
+  template:
+    spec:
+        containers:
+        - name: deploy-tasks-runner
+          image: jmreyesv/my-shrtbread:1.0
+          imagePullPolicy: IfNotPresent
+          command: ["./scripts/deploy-db.sh"]
+          env:
+            - name: WORKDIR
+              value: "/var/www/my-shrtbrd"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                    name: app-secrets
+                    key: postgres_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                    name: app-secrets
+                    key: postgres_password
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                    name: app-secrets
+                    key: postgres_host
+        restartPolicy: Never

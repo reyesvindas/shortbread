@@ -1,0 +1,44 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: db-bkp
+  namespace: shortbrd-app
+spec:
+  schedule: "0 23 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: db-bkp
+            image: jmreyesv/cronjob:1.0
+            command: ["./scripts/backup-db.sh"]
+            env:
+                - name: AWS_DEFAULT_REGION
+                  value: "us-west-2"
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                        name: app-secrets
+                        key: aws_access_key
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                        name: app-secrets
+                        key: aws_secret_key
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                        name: app-secrets
+                        key: postgres_user
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                        name: app-secrets
+                        key: postgres_password
+                - name: PGHOST
+                  valueFrom:
+                    secretKeyRef:
+                        name: app-secrets
+                        key: postgres_host
+          restartPolicy: OnFailure
